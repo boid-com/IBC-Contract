@@ -58,7 +58,7 @@
             ]
         },
         {
-            "name": "channels",
+            "name": "channels_row",
             "base": "",
             "fields": [
                 {
@@ -241,12 +241,26 @@
                 },
                 {
                     "name": "transfer",
-                    "type": "transfer_s"
+                    "type": "transfers_row"
                 }
             ]
         },
         {
-            "name": "report_s",
+            "name": "reporters_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "points",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "reports_row",
             "base": "",
             "fields": [
                 {
@@ -255,7 +269,7 @@
                 },
                 {
                     "name": "transfer",
-                    "type": "transfer_s"
+                    "type": "transfers_row"
                 },
                 {
                     "name": "confirmed",
@@ -276,20 +290,6 @@
                 {
                     "name": "failed_by",
                     "type": "name[]"
-                }
-            ]
-        },
-        {
-            "name": "reporter_info",
-            "base": "",
-            "fields": [
-                {
-                    "name": "account",
-                    "type": "name"
-                },
-                {
-                    "name": "points",
-                    "type": "uint64"
                 }
             ]
         },
@@ -330,7 +330,7 @@
             ]
         },
         {
-            "name": "tokens",
+            "name": "tokens_row",
             "base": "",
             "fields": [
                 {
@@ -360,7 +360,7 @@
             ]
         },
         {
-            "name": "transfer_s",
+            "name": "transfers_row",
             "base": "",
             "fields": [
                 {
@@ -525,7 +525,7 @@
     "tables": [
         {
             "name": "channels",
-            "type": "channels",
+            "type": "channels_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
@@ -539,21 +539,21 @@
         },
         {
             "name": "reporters",
-            "type": "reporter_info",
+            "type": "reporters_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
             "name": "reports",
-            "type": "report_s",
+            "type": "reports_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
             "name": "reports.expr",
-            "type": "report_s",
+            "type": "reports_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
@@ -567,14 +567,14 @@
         },
         {
             "name": "tokens",
-            "type": "tokens",
+            "type": "tokens_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
         },
         {
             "name": "transfers",
-            "type": "transfer_s",
+            "type": "transfers_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

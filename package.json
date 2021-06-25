@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@greymass/eosio": "^0.4.6",
+    "child-process-promise": "^2.2.1",
+    "eosjs": "^21.0.3",
+    "fs-extra": "^9.1.0",
+    "node-fetch": "^2.6.1"
+  }
+}
