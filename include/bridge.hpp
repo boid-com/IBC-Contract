@@ -146,103 +146,103 @@ CONTRACT bridge: public contract {
   ACTION addchannel(name & channel_name, name & remote_contract);
 
   /**
-     * register an IBC token
-     * @param channel
-     * @param token_symbol
-     * @param do_issue
-     * @param min_quantity
-     * @param remote_token
-     * @param enabled
-     */
+   * register an IBC token
+   * @param channel
+   * @param token_symbol
+   * @param do_issue issue tokens on this chain?
+   * @param min_quantity minimum quantity of this token that can be sent over the IBC channel
+   * @param remote_token external token contract info
+   * @param enabled channel must be enabled to process transactions
+   */
   ACTION addtoken(const name& channel, extended_symbol token_symbol, bool do_issue, asset min_quantity, extended_symbol remote_token, bool enabled);
 
   /**
-     * update token parameters
-     * @param channel channel name
-     * @param token_symbol
-     * @param min_quantity minimum quantity of this token that can be sent over the IBC channel
-     * @param enabled channel must be enabled to process transactions
-     */
+   * update token parameters
+   * @param channel channel name
+   * @param token_symbol
+   * @param min_quantity minimum quantity of this token that can be sent over the IBC channel
+   * @param enabled channel must be enabled to process transactions
+   */
   ACTION updatetoken(const name& channel, const extended_symbol& token_symbol, const asset& min_quantity, const bool& enabled);
 
   /**
-     *
-     * @param channel
-     * @param expire_after_seconds
-     * @param threshold
-     */
-  [[eosio::action]] void update(const name& channel, const uint32_t& expire_after_seconds, const uint64_t& threshold);
+   *
+   * @param channel
+   * @param expire_after_seconds
+   * @param threshold
+   */
+  ACTION update(const name& channel, const uint32_t& expire_after_seconds, const uint64_t& threshold);
 
   /**
-     *
-     * @param enable
-     */
-  [[eosio::action]] void enable(bool enable);
+   *
+   * @param enable
+   */
+  ACTION enable(bool enable);
 
   /**
-     *
-     * @param reporter
-     */
-  [[eosio::action]] void addreporter(name reporter);
+   *
+   * @param reporter
+   */
+  ACTION addreporter(name reporter);
 
   /**
-     *
-     * @param reporter
-     */
-  [[eosio::action]] void rmreporter(name reporter);
+   *
+   * @param reporter
+   */
+  ACTION rmreporter(name reporter);
 
   /**
-     *
-     * @param channel_name
-     * @param ids
-     */
+   *
+   * @param channel_name
+   * @param ids
+   */
   [[eosio::action("clear.trans")]] void cleartransfers(const name& channel_name, std::vector<uint64_t> ids);
 
   /**
-     *
-     * @param channel
-     * @param ids
-     */
+   *
+   * @param channel
+   * @param ids
+   */
   [[eosio::action("clear.rep")]] void clearreports(const name& channel, std::vector<uint64_t> ids);
 
   /**
-     *
-     * @param channel
-     * @param count
-     */
+   *
+   * @param channel
+   * @param count
+   */
   [[eosio::action("clear.exp")]] void clearexpired(const name& channel, const uint64_t& count);
 
   /**
-     *
-     * @param reporter
-     * @param channel
-     * @param transfer
-     */
-  [[eosio::action]] void report(const name& reporter, const name& channel, const transfers_row& transfer);
+   *
+   * @param reporter reporter must be registered
+   * @param channel
+   * @param transfer
+   */
+  ACTION report(const name& reporter, const name& channel, const transfers_row& transfer);
 
   /**
-     *
-     * @param reporter
-     * @param channel
-     * @param report_id
-     */
-  [[eosio::action]] void exec(const name& reporter, const name& channel, const uint64_t& report_id);
+   *
+   * @param reporter
+   * @param channel
+   * @param report_id
+   */
+  ACTION exec(const name& reporter, const name& channel, const uint64_t& report_id);
 
   /**
-     *
-     * @param reporter
-     * @param channel
-     * @param report_id
-     */
-  [[eosio::action]] void execfailed(const name& reporter, const name& channel, const uint64_t& report_id);
+   *
+   * @param reporter
+   * @param channel
+   * @param report_id
+   */
+  ACTION execfailed(const name& reporter, const name& channel, const uint64_t& report_id);
 
   /**
-     *
-     * @param from
-     * @param to
-     * @param quantity
-     * @param memo
-     */
+   *
+   * @param from
+   * @param to
+   * @param quantity
+   * @param memo
+   */
   [[eosio::on_notify("*::transfer")]] void on_transfer(const name from,
                                                        const name to,
                                                        const asset quantity,

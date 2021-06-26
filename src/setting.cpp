@@ -21,7 +21,7 @@ ACTION bridge::init(name admin_account, name current_chain_name, uint32_t expire
     get_self());
 }
 
-void bridge::update(const name& channel, const uint32_t& expire_after_seconds, const uint64_t& threshold) {
+ACTION bridge::update(const name& channel, const uint32_t& expire_after_seconds, const uint64_t& threshold) {
   settings_singleton _settings_table(get_self(), get_self().value);
   auto _settings = _settings_table.get();
   reports_table _reports_table(get_self(), channel.value);

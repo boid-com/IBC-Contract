@@ -20,6 +20,36 @@ const methods = {
     const result2 = await api.transact({ actions: [setCodeAction(`../build/${conf.contractName}.wasm`, authorization)] }, tapos).catch(err => console.log(err.toString()))
     if (result2) console.log('https://telos-test.bloks.io/transaction/' + result2.transaction_id)
 
+  },
+  async waxTest(type) {
+    const { api, tapos } = require('./lib/eosjs')(env.keys.waxTest, conf.endpoints.waxTest[0])
+
+    const authorization = [{ actor: conf.accountName.waxTest, permission: 'active' }]
+    if (!type) type = 'debug'
+
+    console.log("Pushing ABI");
+    const result = await api.transact({ actions: [setAbiAction(`../build/${conf.contractName}.abi`, authorization)] }, tapos).catch(err => console.log(err.toString()))
+    if (result) console.log('https://wax-test.bloks.io/transaction/' + result.transaction_id)
+
+    console.log("Pushing WASM");
+    const result2 = await api.transact({ actions: [setCodeAction(`../build/${conf.contractName}.wasm`, authorization)] }, tapos).catch(err => console.log(err.toString()))
+    if (result2) console.log('https://wax-test.bloks.io/transaction/' + result2.transaction_id)
+
+  },
+  async jungle3(type) {
+    const { api, tapos } = require('./lib/eosjs')(env.keys.jungle3, conf.endpoints.jungle3[0])
+
+    const authorization = [{ actor: conf.accountName.waxTest, permission: 'active' }]
+    if (!type) type = 'debug'
+
+    console.log("Pushing ABI");
+    const result = await api.transact({ actions: [setAbiAction(`../build/${conf.contractName}.abi`, authorization)] }, tapos).catch(err => console.log(err.toString()))
+    if (result) console.log('https://jungle3.bloks.io/transaction/' + result.transaction_id)
+
+    console.log("Pushing WASM");
+    const result2 = await api.transact({ actions: [setCodeAction(`../build/${conf.contractName}.wasm`, authorization)] }, tapos).catch(err => console.log(err.toString()))
+    if (result2) console.log('https://jungle3.bloks.io/transaction/' + result2.transaction_id)
+
   }
 }
 

@@ -11,9 +11,10 @@ function chainName() {
 
 
 const methods = {
-  // async addsignevent(contract, max_deposit) {
-  //   await doAction('whitelisttkn', { tknwhitelist: { contract, max_deposit } })
-  // },
+  async init() {
+
+  },
+  // async addtoken
 
 }
 

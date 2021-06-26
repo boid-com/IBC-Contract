@@ -1,5 +1,5 @@
 #include <bridge.hpp>
-void bridge::report(const name& reporter, const name& channel, const transfers_row& transfer) {
+ACTION bridge::report(const name& reporter, const name& channel, const transfers_row& transfer) {
   auto settings = get_settings();
 
   require_auth(reporter);
@@ -66,7 +66,7 @@ void bridge::report(const name& reporter, const name& channel, const transfers_r
   }
 }
 
-void bridge::exec(const name& reporter, const name& channel, const uint64_t& report_id) {
+ACTION bridge::exec(const name& reporter, const name& channel, const uint64_t& report_id) {
   settings_singleton _settings_table(get_self(), get_self().value);
   auto _settings = _settings_table.get();
   check(_settings.enabled, "bridge disabled");
@@ -110,7 +110,7 @@ void bridge::exec(const name& reporter, const name& channel, const uint64_t& rep
   });
 }
 
-void bridge::execfailed(const name& reporter, const name& channel, const uint64_t& report_id) {
+ACTION bridge::execfailed(const name& reporter, const name& channel, const uint64_t& report_id) {
   settings_singleton _settings_table(get_self(), get_self().value);
   auto _settings = _settings_table.get();
 
