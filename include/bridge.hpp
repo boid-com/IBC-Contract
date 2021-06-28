@@ -11,6 +11,7 @@
 
 using namespace eosio;
 using namespace std;
+#define DEBUG
 
 CONTRACT bridge: public contract {
  public:
@@ -19,25 +20,15 @@ CONTRACT bridge: public contract {
   //
   // TABLES
   //
-
-  // Metadata about the contract and project
-  TABLE info_row {
-    name key;
-    string value;
-
-    uint64_t primary_key() const { return key.value; }
-  };
-  using info_table = eosio::multi_index<"info"_n, info_row>;
-
   // Global Settings
-  TABLE settings {
+  TABLE settings_row {
     name admin_account;
     name current_chain_name;
     bool enabled;
     eosio::microseconds expire_after = days(7);  // duration after which transfers and reports expire can be evicted from RAM
-    uint8_t threshold;                           // how many reporters need to report a transfer for it to be confirmed
+    uint32_t weight_threshold;                   // cumulative weight threshold needed for a report to be confirmed
   };
-  using settings_singleton = eosio::singleton<"settings"_n, settings>;
+  using settings_singleton = eosio::singleton<"settings"_n, settings_row>;
 
   // Multichain Channels
   TABLE channels_row {
@@ -103,6 +94,8 @@ CONTRACT bridge: public contract {
     transfers_row transfer;
     bool confirmed = false;
     std::vector<name> confirmed_by;
+    uint32_t confirmation_weight = 0;
+    uint32_t failed_weight = 0;
     bool executed = false;
     bool failed = false;
     std::vector<name> failed_by;
@@ -118,15 +111,15 @@ CONTRACT bridge: public contract {
                                            indexed_by<"bytransferid"_n, const_mem_fun<reports_row, uint128_t, &reports_row::by_transfer_id>>,
                                            indexed_by<"byexpiry"_n, const_mem_fun<reports_row, uint64_t, &reports_row::by_expiry>>>;
   // keeps track of unprocessed reports that expired for manual review
-  using expired_reports_table = eosio::multi_index<"reports.expr"_n, reports_row>;
+  using expiredreports_table = eosio::multi_index<"reports.expr"_n, reports_row>;
 
   // registered reporters
   TABLE reporters_row {
     name account;
-    uint64_t points = 0;
-
-    uint64_t primary_key() const { return account.value; }  // need to serialize public_key
-    // EOSLIB_SERIALIZE(reporter_info, (account)(points))
+    uint64_t unclaimed_points = 0;
+    uint64_t claimed_points = 0;
+    uint8_t weight = 1;
+    uint64_t primary_key() const { return account.value; }
   };
   using reporters_table = eosio::multi_index<"reporters"_n, reporters_row>;
 
@@ -183,7 +176,7 @@ CONTRACT bridge: public contract {
    *
    * @param reporter
    */
-  ACTION addreporter(name reporter);
+  ACTION addreporter(name reporter, uint8_t weight);
 
   /**
    *
@@ -248,8 +241,25 @@ CONTRACT bridge: public contract {
                                                        const asset quantity,
                                                        const string memo);
 
+#if defined(DEBUG)
+  ACTION clrreporters();
+  ACTION clrtransfers(name channel);
+  ACTION clrtokens(name channel);
+  ACTION clrreports(name channel);
+
+  template <typename T>
+  void cleanTable(name code, uint64_t account, const uint32_t batchSize) {
+    T db(code, account);
+    uint32_t counter = 0;
+    auto itr = db.begin();
+    while(itr != db.end() && counter++ < batchSize) {
+      itr = db.erase(itr);
+    }
+  }
+#endif
+
  private:
-  settings get_settings();
+  settings_row get_settings();
 
   bool channel_exists(name channel_name);
 
@@ -291,9 +301,9 @@ CONTRACT bridge: public contract {
     return res;
   }
 
-  void check_reporter(name reporter) {
-    reporters_table _reporters_table(get_self(), get_self().value);
-    _reporters_table.require_find(reporter.value, "the signer is not a known reporter");
+  reporters_table::const_iterator check_reporter(name reporter) {
+    reporters_table reporters_t(get_self(), get_self().value);
+    return reporters_t.require_find(reporter.value, "the signer is not a known reporter");
   }
 
   /**

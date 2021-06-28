@@ -40,7 +40,7 @@ const initPrams = (chain) => {
 const methods = {
   async debug(data) {
     try {
-      // fs.ensureDirSync('../build/debug')
+      fs.ensureDirSync('../build')
       const params = initPrams('debug')
         .concat(['-o', `./build/${conf.contractName}.wasm`])
       console.log("Building with params:")

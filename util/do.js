@@ -1,18 +1,44 @@
+
 const conf = require('../eosioConfig')
 const env = require('../.env.js')
-const { api, tapos, doAction } = require('./lib/eosjs')(env.keys[env.defaultChain], conf.endpoints[env.defaultChain][0])
-const contractAccount = conf.accountName[env.defaultChain]
-var watchAccountSample = require('./lib/sample_watchaccount')
-function chainName() {
-  if (env.defaultChain == 'jungle') return 'jungle3'
-  else return env.defaultChain
-}
-
-
+const { api, tapos, doAction } = require('./lib/eosjs')()
 
 const methods = {
-  async init() {
+  async addtoken() {
+    doAction('addtoken', {
+      channel: 'telos',
+      do_issue: true,
+      enabled: true,
+      remote_token: {
+        contract: 'eosio.token',
+        sym: '4,TLOS'
+      },
+      token_symbol: {
+        contract: 'ibcbridgetkn',
+        sym: '4,TLOS'
+      },
+      min_quantity: "1.0000 TLOS"
+    })
+  },
+  async report() {
+    doAction('report', {
+      reporter: 'ibcbridgedev',
+      channel: 'telos',
+      transfer: {
+        id: 1,
+        transaction_id: '79F169E4822E13B904FB395A6940C46B53F618233568663645BCF6C813F77912',
+        from_blockchain: 'telos',
+        to_blockchain: 'wax',
+        from_account: 'eosio.token',
+        to_account: 'eosio.token',
+        quantity: '100.0000 TLOS',
+        memo: 'test',
+        transaction_time: new Date(),
+        expires_at: new Date(Date.now() + 6000000),
+        is_refund: false
+      }
 
+    })
   },
   // async addtoken
 

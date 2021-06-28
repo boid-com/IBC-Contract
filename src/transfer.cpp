@@ -12,13 +12,13 @@ void bridge::register_transfer(const name& channel_name, const name& from, const
   //    check( channel_itt-> enabled, "channel disabled");
 
   transfers_table _transfers_table(get_self(), channel_name.value);
-  tokens_table _tokens_table(get_self(), channel_name.value);
+  tokens_table tokens_t(get_self(), channel_name.value);
 
   const auto transfer_id = channel_itt->next_transfer_id;
 
   print(">>> ", channel_name, ", ", quantity.to_string());
 
-  auto _token = _tokens_table.get(quantity.symbol.code().raw(), "token not found");
+  auto _token = tokens_t.get(quantity.symbol.code().raw(), "token not found");
 
   // record this transfer in case we need to refund it
   _transfers_table.emplace(get_self(), [&](auto& x) {

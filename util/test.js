@@ -1,11 +1,16 @@
+
 const conf = require('../eosioConfig')
 const env = require('../.env.js')
-const { api, tapos, doAction } = require('./lib/eosjs')(env.keys[env.defaultChain], conf.endpoints[env.defaultChain][0])
-const contractAccount = conf.accountName[env.defaultChain]
-const contractActions = require('./do.js')
+const { api, tapos, doAction } = require('./lib/eosjs')()
 
 const methods = {
 
+  async fullReset() {
+    doAction('clrtokens', { channel: "wax" })
+    doAction('clrreporters', { channel: "wax" })
+    doAction('clrtransfers', { channel: "wax" })
+    doAction('clrreports', { channel: "wax" })
+  }
 
 }
 

@@ -3,7 +3,7 @@ ACTION bridge::report(const name& reporter, const name& channel, const transfers
   auto settings = get_settings();
 
   require_auth(reporter);
-  check_reporter(reporter);
+  reporters_table::const_iterator reporter_itr = check_reporter(reporter);
   reporter_worked(reporter);
   check(transfer.expires_at > current_time_point(), "transfer already expired");
   free_ram(channel);
@@ -16,171 +16,171 @@ ACTION bridge::report(const name& reporter, const name& channel, const transfers
   // initiate a refund
   // check( channel == name(transfer.from_blockchain), "channel is invalid" )
 
-  reports_table _reports_table(get_self(), channel.value);
+  reports_table reports_t(get_self(), channel.value);
 
   uint128_t transfer_id = reports_row::_by_transfer_id(transfer);
 
-  auto reports_by_transfer = _reports_table.get_index<"bytransferid"_n>();
-  auto report = reports_by_transfer.lower_bound(transfer_id);
-  bool new_report = report == reports_by_transfer.upper_bound(transfer_id);
+  auto reports_by_transfer = reports_t.get_index<"bytransferid"_n>();
+  auto reports_itr = reports_by_transfer.lower_bound(transfer_id);
+  bool new_report = reports_itr == reports_by_transfer.upper_bound(transfer_id);
 
   if(!new_report) {
     new_report = true;
     // check and find report with same transfer data
-    while(report != reports_by_transfer.upper_bound(transfer_id)) {
-      if(report->transfer == transfer) {
+    while(reports_itr != reports_by_transfer.upper_bound(transfer_id)) {
+      if(reports_itr->transfer == transfer) {
         new_report = false;
         break;
       }
-      report++;
+      reports_itr++;
     }
   }
 
   // first reporter
   if(new_report) {
-    _reports_table.emplace(get_self(), [&](auto& s) {
+    reports_t.emplace(reporter, [&](reports_row& row) {
       auto reserved_capacity = get_num_reporters();
-      s.id = _reports_table.available_primary_key();
-      s.transfer = transfer;
+      row.id = reports_t.available_primary_key();
+      row.transfer = transfer;
+      row.confirmation_weight = reporter_itr->weight;
       // NA let first reporter pay for RAM
       // need to add actual elements because capacity is not serialized
       // does not work: s.confirmed_by.reserve(reserved_capacity);
-      s.confirmed_by = std::vector<name>(reserved_capacity, eosio::name(""));
-      push_first_free(s.confirmed_by, reporter);
-
-      s.failed_by = std::vector<name>(reserved_capacity, eosio::name(""));
-      s.confirmed = 1 >= settings.threshold;
-      s.executed = false;
+      // row.confirmed_by = std::vector<name>(reserved_capacity, eosio::name(""));
+      // push_first_free(row.confirmed_by, reporter);
+      row.confirmed_by.push_back(reporter);
+      row.confirmed = reporter_itr->weight >= settings.weight_threshold;
+      row.executed = false;
     });
 
   } else {
     // checks that the reporter didn't already report the transfer
-    check(std::find(report->confirmed_by.begin(), report->confirmed_by.end(), reporter) == report->confirmed_by.end(),
+    check(std::find(reports_itr->confirmed_by.begin(), reports_itr->confirmed_by.end(), reporter) == reports_itr->confirmed_by.end(),
           "the reporter already reported the transfer");
 
-    // can use same_payer here because confirmed_by has enough capacity unless a new reporter was added in between
-    reports_by_transfer.modify(report, eosio::same_payer, [&](auto& s) {
-      push_first_free(s.confirmed_by, reporter);
-      s.confirmed = count_non_empty(s.confirmed_by) >= settings.threshold;
+    reports_by_transfer.modify(reports_itr, reporter, [&](reports_row& row) {
+      row.confirmed_by.push_back(reporter);
+      row.confirmation_weight += reporter_itr->weight;
+      row.confirmed = row.confirmation_weight >= settings.weight_threshold;
     });
   }
 }
 
 ACTION bridge::exec(const name& reporter, const name& channel, const uint64_t& report_id) {
-  settings_singleton _settings_table(get_self(), get_self().value);
-  auto _settings = _settings_table.get();
-  check(_settings.enabled, "bridge disabled");
+  settings_singleton settings_t(get_self(), get_self().value);
+  settings_row settings_r = settings_t.get();
+  check(settings_r.enabled, "bridge disabled");
 
-  reports_table _reports_table(get_self(), channel.value);
-  tokens_table _tokens_table(get_self(), channel.value);
+  reports_table reports_t(get_self(), channel.value);
+  tokens_table tokens_t(get_self(), channel.value);
 
   require_auth(reporter);
   check_reporter(reporter);
   reporter_worked(reporter);
   free_ram(channel);
 
-  auto report = _reports_table.find(report_id);
-  check(report != _reports_table.end(), "report does not exist");
-  check(report->confirmed, "not confirmed yet");
-  check(!report->executed, "already executed");
-  check(!report->failed, "transfer already failed");
-  check(report->transfer.expires_at > current_time_point(), "report's transfer already expired");
+  reports_table::const_iterator reports_itr = reports_t.find(report_id);
+  check(reports_itr != reports_t.end(), "report does not exist");
+  check(reports_itr->confirmed, "not confirmed yet");
+  check(!reports_itr->executed, "already executed");
+  check(!reports_itr->failed, "transfer already failed");
+  check(reports_itr->transfer.expires_at > current_time_point(), "report's transfer already expired");
 
-  //    auto _token = _tokens_table.get( report->transfer.quantity.symbol.code().raw(), "token not found" );
+  //    auto _token = tokens_t.get( report->transfer.quantity.symbol.code().raw(), "token not found" );
   // lookup by remote token
-  auto remote_token_index = _tokens_table.get_index<name("byremote")>();
-  auto _token = remote_token_index.get(report->transfer.quantity.symbol.code().raw(), "token not found");
-  name token_contract = _token.token_info.get_contract();
+  auto remote_token_index = tokens_t.get_index<name("byremote")>();
+  tokens_row tokens_r = remote_token_index.get(reports_itr->transfer.quantity.symbol.code().raw(), "token not found");
+  name token_contract = tokens_r.token_info.get_contract();
 
   // convert original symbol to symbol on this chain
-  asset quantity = asset(report->transfer.quantity.amount, _token.token_info.get_symbol());
+  asset quantity = asset(reports_itr->transfer.quantity.amount, tokens_r.token_info.get_symbol());
 
   // Change logic, always issue tokens if do_issue. always retire on reverse path
-  if(_token.do_issue) {
+  if(tokens_r.do_issue) {
     // issue tokens first, self must be issuer of token
     token::issue_action issue_act(token_contract, {get_self(), "active"_n});
-    issue_act.send(get_self(), quantity, report->transfer.memo);
+    issue_act.send(get_self(), quantity, reports_itr->transfer.memo);
   }
 
   token::transfer_action transfer_act(token_contract, {get_self(), "active"_n});
-  transfer_act.send(get_self(), report->transfer.to_account, quantity, report->transfer.memo);
+  transfer_act.send(get_self(), reports_itr->transfer.to_account, quantity, reports_itr->transfer.memo);
 
-  _reports_table.modify(report, eosio::same_payer, [&](auto& s) {
+  reports_t.modify(reports_itr, eosio::same_payer, [&](auto& s) {
     s.executed = true;
   });
 }
 
 ACTION bridge::execfailed(const name& reporter, const name& channel, const uint64_t& report_id) {
-  settings_singleton _settings_table(get_self(), get_self().value);
-  auto _settings = _settings_table.get();
+  settings_singleton settings_t(get_self(), get_self().value);
+  auto settings_r = settings_t.get();
 
-  check(_settings.enabled, "bridge disabled");
+  check(settings_r.enabled, "bridge disabled");
 
-  reports_table _reports_table(get_self(), channel.value);
-  tokens_table _tokens_table(get_self(), channel.value);
+  reports_table reports_t(get_self(), channel.value);
+  tokens_table tokens_t(get_self(), channel.value);
 
   require_auth(reporter);
-  check_reporter(reporter);
+  reporters_table::const_iterator reporter_itr = check_reporter(reporter);
   reporter_worked(reporter);
   free_ram(channel);
 
-  auto report = _reports_table.find(report_id);
-  check(report != _reports_table.end(), "report does not exist");
-  check(report->confirmed, "not confirmed yet");
-  check(!report->executed, "already executed");
-  check(!report->failed, "transfer already failed");
-  check(report->transfer.expires_at > current_time_point(), "report's transfer already expired");
-  check(std::find(report->failed_by.begin(), report->failed_by.end(), reporter) == report->failed_by.end(),
+  reports_table::const_iterator reports_itr = reports_t.find(report_id);
+  check(reports_itr != reports_t.end(), "report does not exist");
+  check(reports_itr->confirmed, "not confirmed yet");
+  check(!reports_itr->executed, "already executed");
+  check(!reports_itr->failed, "transfer already failed");
+  check(reports_itr->transfer.expires_at > current_time_point(), "report's transfer already expired");
+  check(std::find(reports_itr->failed_by.begin(), reports_itr->failed_by.end(), reporter) == reports_itr->failed_by.end(),
         "report already marked as failed by reporter");
 
-  //    auto _token = _tokens_table.get( report->transfer.quantity.symbol.code().raw(), "token not found" );
-  auto remote_token_index = _tokens_table.get_index<name("byremote")>();
-  auto _token = remote_token_index.get(report->transfer.quantity.symbol.code().raw(), "token not found");
+  //    auto _token = tokens_t.get( report->transfer.quantity.symbol.code().raw(), "token not found" );
+  auto remote_token_index = tokens_t.get_index<name("byremote")>();
+  auto _token = remote_token_index.get(reports_itr->transfer.quantity.symbol.code().raw(), "token not found");
 
   bool failed = false;
-  _reports_table.modify(report, eosio::same_payer, [&](auto& s) {
-    push_first_free(s.failed_by, reporter);
-    s.failed = failed = count_non_empty(s.failed_by) >= _settings.threshold;
+  reports_t.modify(reports_itr, eosio::same_payer, [&](reports_row& row) {
+    row.failed_by.push_back(reporter);
+    row.failed = failed = row.failed_weight >= settings_r.weight_threshold;
   });
 
   // init a cross-chain refund transfer
   if(failed) {
     // if original transfer already was a refund stop refund ping pong and just record it in a table requiring manual review
-    if(report->transfer.is_refund) {
+    if(reports_itr->transfer.is_refund) {
       // no_transfers_t failed_transfers_table(get_self(), get_self().value);
       // failed_transfers_table.emplace(get_self(),
       //                                [&](auto &x) { x = report->transfer; });
     } else {
-      auto channel_name = report->transfer.from_blockchain;
-      auto from = get_ibc_contract_for_channel(report->transfer.from_blockchain);
-      auto to = report->transfer.from_account;
-      auto quantity = asset(report->transfer.quantity.amount, _token.token_info.get_symbol());
+      auto channel_name = reports_itr->transfer.from_blockchain;
+      auto from = get_ibc_contract_for_channel(reports_itr->transfer.from_blockchain);
+      auto to = reports_itr->transfer.from_account;
+      auto quantity = asset(reports_itr->transfer.quantity.amount, _token.token_info.get_symbol());
       register_transfer(channel_name, from, to, quantity, "refund", true);
     }
   }
 }
 
 void bridge::clearexpired(const name& channel, const uint64_t& count) {
-  reports_table _reports_table(get_self(), channel.value);
+  reports_table reports_t(get_self(), channel.value);
 
   require_auth(get_self());
 
   auto current_count = 0;
-  expired_reports_table expired_reports_table(get_self(), channel.value);
-  for(auto it = expired_reports_table.begin(); it != expired_reports_table.end() && current_count < count; current_count++, it++) {
-    expired_reports_table.erase(it);
+  expiredreports_table expiredreports_t(get_self(), channel.value);
+  for(auto it = expiredreports_t.begin(); it != expiredreports_t.end() && current_count < count; current_count++, it++) {
+    expiredreports_t.erase(it);
   }
 }
 
 // must make sure to always clear transfers on other chain first otherwise would report twice
 void bridge::clearreports(const name& channel, std::vector<uint64_t> ids) {
-  reports_table _reports_table(get_self(), channel.value);
+  reports_table reports_t(get_self(), channel.value);
 
   require_auth(get_self());
 
   for(auto id : ids) {
-    auto it = _reports_table.find(id);
-    check(it != _reports_table.end(), "some id does not exist");
-    _reports_table.erase(it);
+    auto it = reports_t.find(id);
+    check(it != reports_t.end(), "some id does not exist");
+    reports_t.erase(it);
   }
 }

@@ -1,6 +1,6 @@
 {
     "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
-    "version": "eosio::abi/1.1",
+    "version": "eosio::abi/1.2",
     "types": [],
     "structs": [
         {
@@ -24,6 +24,10 @@
                 {
                     "name": "reporter",
                     "type": "name"
+                },
+                {
+                    "name": "weight",
+                    "type": "uint8"
                 }
             ]
         },
@@ -122,6 +126,41 @@
             ]
         },
         {
+            "name": "clrreporters",
+            "base": "",
+            "fields": []
+        },
+        {
+            "name": "clrreports",
+            "base": "",
+            "fields": [
+                {
+                    "name": "channel",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "clrtokens",
+            "base": "",
+            "fields": [
+                {
+                    "name": "channel",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "clrtransfers",
+            "base": "",
+            "fields": [
+                {
+                    "name": "channel",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "enable",
             "base": "",
             "fields": [
@@ -178,20 +217,6 @@
                 {
                     "name": "contract",
                     "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "info_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "key",
-                    "type": "name"
-                },
-                {
-                    "name": "value",
-                    "type": "string"
                 }
             ]
         },
@@ -254,8 +279,16 @@
                     "type": "name"
                 },
                 {
-                    "name": "points",
+                    "name": "unclaimed_points",
                     "type": "uint64"
+                },
+                {
+                    "name": "claimed_points",
+                    "type": "uint64"
+                },
+                {
+                    "name": "weight",
+                    "type": "uint8"
                 }
             ]
         },
@@ -278,6 +311,14 @@
                 {
                     "name": "confirmed_by",
                     "type": "name[]"
+                },
+                {
+                    "name": "confirmation_weight",
+                    "type": "uint32"
+                },
+                {
+                    "name": "failed_weight",
+                    "type": "uint32"
                 },
                 {
                     "name": "executed",
@@ -304,7 +345,7 @@
             ]
         },
         {
-            "name": "settings",
+            "name": "settings_row",
             "base": "",
             "fields": [
                 {
@@ -324,8 +365,8 @@
                     "type": "microseconds"
                 },
                 {
-                    "name": "threshold",
-                    "type": "uint8"
+                    "name": "weight_threshold",
+                    "type": "uint32"
                 }
             ]
         },
@@ -482,6 +523,26 @@
             "ricardian_contract": ""
         },
         {
+            "name": "clrreporters",
+            "type": "clrreporters",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "clrreports",
+            "type": "clrreports",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "clrtokens",
+            "type": "clrtokens",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "clrtransfers",
+            "type": "clrtransfers",
+            "ricardian_contract": ""
+        },
+        {
             "name": "enable",
             "type": "enable",
             "ricardian_contract": ""
@@ -531,13 +592,6 @@
             "key_types": []
         },
         {
-            "name": "info",
-            "type": "info_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
             "name": "reporters",
             "type": "reporters_row",
             "index_type": "i64",
@@ -559,8 +613,8 @@
             "key_types": []
         },
         {
-            "name": "settings",
-            "type": "settings",
+            "name": "settings_row",
+            "type": "settings_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
@@ -580,6 +634,8 @@
             "key_types": []
         }
     ],
+    "kv_tables": {},
     "ricardian_clauses": [],
-    "variants": []
+    "variants": [],
+    "action_results": []
 }

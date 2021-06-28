@@ -11,3 +11,4 @@ SpaceBeforeCpp11BracedList: true
 SpaceBeforeInheritanceColon: false
 NamespaceIndentation: All
 AllowShortIfStatementsOnASingleLine: Always
+SortIncludes: false

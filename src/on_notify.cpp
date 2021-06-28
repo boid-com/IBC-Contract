@@ -23,9 +23,9 @@ void bridge::on_transfer(name from, name to, asset quantity, string memo) {
   check(channel_itt->enabled, "channel disabled");
 
   // check token
-  tokens_table _tokens_table(get_self(), channel_name.value);
+  tokens_table tokens_t(get_self(), channel_name.value);
 
-  auto _token = _tokens_table.get(quantity.symbol.code().raw(), "token not found");
+  auto _token = tokens_t.get(quantity.symbol.code().raw(), "token not found");
   check(to == get_self(), "contract not involved in transfer");
   check(get_first_receiver() == _token.token_info.get_contract(), "incorrect token contract");
   check(quantity.symbol == _token.token_info.get_symbol(), "correct token contract, but wrong symbol");
