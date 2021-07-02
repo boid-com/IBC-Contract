@@ -1,5 +1,5 @@
 #include <bridge.hpp>
-void bridge::on_transfer(name from, name to, asset quantity, string memo) {
+void bridge::on_transfer(const name& from, const name& to, const asset& quantity, const string& memo) {
   auto settings = get_settings();
 
   // allow maintenance when bridge disabled

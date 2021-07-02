@@ -1,5 +1,5 @@
 #include <bridge.hpp>
-void bridge::addreporter(name reporter, uint8_t weight) {
+void bridge::addreporter(const name& reporter, const uint8_t& weight) {
   auto settings = get_settings();
   require_auth(settings.admin_account);
 
@@ -16,7 +16,7 @@ void bridge::addreporter(name reporter, uint8_t weight) {
   });
 }
 
-void bridge::rmreporter(name reporter) {
+void bridge::rmreporter(const name& reporter) {
   auto settings = get_settings();
   require_auth(settings.admin_account);
 

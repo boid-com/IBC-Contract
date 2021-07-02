@@ -1,5 +1,5 @@
 #include <bridge.hpp>
-ACTION bridge::init(name admin_account, name current_chain_name, uint32_t expire_after_seconds, uint8_t threshold) {
+ACTION bridge::init(const name& admin_account, const name& current_chain_name, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold) {
   settings_singleton settings_t(get_self(), get_self().value);
 
   require_auth(get_self());
@@ -8,7 +8,7 @@ ACTION bridge::init(name admin_account, name current_chain_name, uint32_t expire
 
   check(!settings_exists, "settings already defined");
   check(is_account(admin_account), "admin account does not exist");
-  check(threshold > 0, "threshold must be positive");
+  check(weight_threshold > 0, "threshold must be positive");
 
   settings_t.set(
     settings_row {
@@ -16,35 +16,35 @@ ACTION bridge::init(name admin_account, name current_chain_name, uint32_t expire
       .current_chain_name = current_chain_name,
       .enabled = false,
       .expire_after = seconds(expire_after_seconds),
-      .weight_threshold = threshold,
+      .weight_threshold = weight_threshold,
     },
     get_self());
 }
 
-ACTION bridge::update(const name& channel, const uint32_t& expire_after_seconds, const uint64_t& threshold) {
+ACTION bridge::update(const name& channel, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold) {
   settings_singleton settings_t(get_self(), get_self().value);
   settings_row settings_r = settings_t.get();
   reports_table reports_t(get_self(), channel.value);
 
   require_auth(get_self());
 
-  check(threshold > 0, "minimum reporters must be positive");
+  check(weight_threshold > 0, "minimum reporters must be positive");
 
-  settings_r.weight_threshold = threshold;
+  settings_r.weight_threshold = weight_threshold;
   settings_r.expire_after = seconds(expire_after_seconds);
   settings_t.set(settings_r, get_self());
 
   // need to update all unconfirmed reports and check if they are now confirmed
   for(auto report = reports_t.begin(); report != reports_t.end(); report++) {
-    if(!report->confirmed && count_non_empty(report->confirmed_by) >= threshold) {
-      reports_t.modify(report, eosio::same_payer, [&](auto& s) {
-        s.confirmed = true;
+    if(!report->confirmed && report->confirmation_weight >= weight_threshold) {
+      reports_t.modify(report, eosio::same_payer, [&](reports_row& row) {
+        row.confirmed = true;
       });
     }
   }
 }
 
-void bridge::enable(bool enable) {
+void bridge::enable(const bool& enable) {
   settings_singleton settings_table(get_self(), get_self().value);
   check(settings_table.exists(), "contract not initialised");
   auto settings = settings_table.get();

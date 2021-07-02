@@ -140,6 +140,7 @@ ACTION bridge::execfailed(const name& reporter, const name& channel, const uint6
   bool failed = false;
   reports_t.modify(reports_itr, eosio::same_payer, [&](reports_row& row) {
     row.failed_by.push_back(reporter);
+    row.failed_weight += reporter_itr->weight;
     row.failed = failed = row.failed_weight >= settings_r.weight_threshold;
   });
 

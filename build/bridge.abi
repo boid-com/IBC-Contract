@@ -237,8 +237,8 @@
                     "type": "uint32"
                 },
                 {
-                    "name": "threshold",
-                    "type": "uint8"
+                    "name": "weight_threshold",
+                    "type": "uint32"
                 }
             ]
         },
@@ -464,7 +464,7 @@
                 },
                 {
                     "name": "threshold",
-                    "type": "uint64"
+                    "type": "uint32"
                 }
             ]
         },

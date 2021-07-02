@@ -1,22 +1,22 @@
 
 #include <bridge.hpp>
-ACTION bridge::addchannel(name& channel_name, name& remote_contract) {
+ACTION bridge::addchannel(const name& channel_name, const name& remote_contract) {
   auto settings = get_settings();
   require_auth(settings.admin_account);
   // require_auth(get_self());
 
   check(channel_name != settings.current_chain_name, "cannot create channel to self");
 
-  channels_table _channels(get_self(), get_self().value);
-  check(_channels.find(channel_name.value) == _channels.end(), "channel already exists");
+  channels_table channels_t(get_self(), get_self().value);
+  check(channels_t.find(channel_name.value) == channels_t.end(), "channel already exists");
 
-  _channels.emplace(get_self(), [&](auto& row) {
+  channels_t.emplace(get_self(), [&](channels_row& row) {
     row.channel_name = channel_name;
     row.remote_contract = remote_contract;
   });
 }
 
-bool bridge::channel_exists(name channel_name) {
-  channels_table _channels(get_self(), get_self().value);
-  return (_channels.find(channel_name.value) != _channels.end());
+bool bridge::channel_exists(const name channel_name) {
+  channels_table channels_t(get_self(), get_self().value);
+  return (channels_t.find(channel_name.value) != channels_t.end());
 }

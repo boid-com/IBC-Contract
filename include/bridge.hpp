@@ -134,9 +134,9 @@ CONTRACT bridge: public contract {
    * @param expire_after_seconds pending transfers will stay in the transfers table for this long before they will fail
    * @param threshold how many reporters are required to approve a transfer for it to be validated
    */
-  ACTION init(name admin_account, name current_chain_name, uint32_t expire_after_seconds, uint8_t threshold);
+  ACTION init(const name& admin_account, const name& current_chain_name, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold);
 
-  ACTION addchannel(name & channel_name, name & remote_contract);
+  ACTION addchannel(const name& channel_name, const name& remote_contract);
 
   /**
    * register an IBC token
@@ -147,7 +147,7 @@ CONTRACT bridge: public contract {
    * @param remote_token external token contract info
    * @param enabled channel must be enabled to process transactions
    */
-  ACTION addtoken(const name& channel, extended_symbol token_symbol, bool do_issue, asset min_quantity, extended_symbol remote_token, bool enabled);
+  ACTION addtoken(const name& channel, const extended_symbol& token_symbol, const bool& do_issue, const asset& min_quantity, const extended_symbol& remote_token, const bool& enabled);
 
   /**
    * update token parameters
@@ -164,25 +164,25 @@ CONTRACT bridge: public contract {
    * @param expire_after_seconds
    * @param threshold
    */
-  ACTION update(const name& channel, const uint32_t& expire_after_seconds, const uint64_t& threshold);
+  ACTION update(const name& channel, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold);
 
   /**
    *
    * @param enable
    */
-  ACTION enable(bool enable);
+  ACTION enable(const bool& enable);
 
   /**
    *
    * @param reporter
    */
-  ACTION addreporter(name reporter, uint8_t weight);
+  ACTION addreporter(const name& reporter, const uint8_t& weight);
 
   /**
    *
    * @param reporter
    */
-  ACTION rmreporter(name reporter);
+  ACTION rmreporter(const name& reporter);
 
   /**
    *
@@ -236,10 +236,10 @@ CONTRACT bridge: public contract {
    * @param quantity
    * @param memo
    */
-  [[eosio::on_notify("*::transfer")]] void on_transfer(const name from,
-                                                       const name to,
-                                                       const asset quantity,
-                                                       const string memo);
+  [[eosio::on_notify("*::transfer")]] void on_transfer(const name& from,
+                                                       const name& to,
+                                                       const asset& quantity,
+                                                       const string& memo);
 
 #if defined(DEBUG)
   ACTION clrreporters();
