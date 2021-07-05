@@ -56,6 +56,14 @@
                     "type": "extended_symbol"
                 },
                 {
+                    "name": "fee_pct",
+                    "type": "float32"
+                },
+                {
+                    "name": "fee_flat",
+                    "type": "asset"
+                },
+                {
                     "name": "enabled",
                     "type": "bool"
                 }
@@ -80,6 +88,26 @@
                 {
                     "name": "enabled",
                     "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "claimfees",
+            "base": "",
+            "fields": [
+                {
+                    "name": "reporter",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "claimpoints",
+            "base": "",
+            "fields": [
+                {
+                    "name": "reporter",
+                    "type": "name"
                 }
             ]
         },
@@ -283,12 +311,20 @@
                     "type": "uint64"
                 },
                 {
-                    "name": "claimed_points",
+                    "name": "total_claimed_points",
                     "type": "uint64"
+                },
+                {
+                    "name": "last_claim_time",
+                    "type": "time_point_sec"
                 },
                 {
                     "name": "weight",
                     "type": "uint8"
+                },
+                {
+                    "name": "unclaimed_fees",
+                    "type": "extended_asset[]"
                 }
             ]
         },
@@ -367,6 +403,10 @@
                 {
                     "name": "weight_threshold",
                     "type": "uint32"
+                },
+                {
+                    "name": "unclaimed_points",
+                    "type": "uint64"
                 }
             ]
         },
@@ -397,6 +437,22 @@
                 {
                     "name": "enabled",
                     "type": "bool"
+                },
+                {
+                    "name": "fee_pct",
+                    "type": "float32"
+                },
+                {
+                    "name": "fee_flat",
+                    "type": "asset"
+                },
+                {
+                    "name": "total_claimed_fees",
+                    "type": "asset"
+                },
+                {
+                    "name": "unclaimed_fees",
+                    "type": "asset"
                 }
             ]
         },
@@ -463,7 +519,7 @@
                     "type": "uint32"
                 },
                 {
-                    "name": "threshold",
+                    "name": "weight_threshold",
                     "type": "uint32"
                 }
             ]
@@ -505,6 +561,16 @@
         {
             "name": "addtoken",
             "type": "addtoken",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "claimfees",
+            "type": "claimfees",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "claimpoints",
+            "type": "claimpoints",
             "ricardian_contract": ""
         },
         {

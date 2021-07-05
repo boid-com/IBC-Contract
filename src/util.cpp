@@ -27,6 +27,22 @@ void bridge::free_ram(const name& channel) {
   }
 }
 
+float pow(float x, int y) {
+  float result = 1;
+  for(int i = 0; i < y; ++i) {
+    result *= x;
+  }
+  return result;
+}
+
+float asset_to_float(asset target) {
+  return float(target.amount) / pow(10.0, target.symbol.precision());
+}
+
+asset float_to_asset(float target, symbol symbol) {
+  return asset(uint64_t(target * pow(10.0, symbol.precision())), symbol);
+}
+
 #if defined(DEBUG)
 ACTION bridge::clrreporters() {
   require_auth(get_self());

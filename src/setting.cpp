@@ -17,6 +17,7 @@ ACTION bridge::init(const name& admin_account, const name& current_chain_name, c
       .enabled = false,
       .expire_after = seconds(expire_after_seconds),
       .weight_threshold = weight_threshold,
+      .unclaimed_points = 0,
     },
     get_self());
 }

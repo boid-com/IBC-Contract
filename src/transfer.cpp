@@ -47,7 +47,7 @@ void bridge::register_transfer(const name& channel_name, const name& from, const
   });
 }
 
-void bridge::cleartransfers(const name& channel_name, std::vector<uint64_t> ids) {
+void bridge::cleartransfers(const name& channel_name, const std::vector<uint64_t>& ids) {
   transfers_table _transfers_table(get_self(), channel_name.value);
 
   require_auth(get_self());

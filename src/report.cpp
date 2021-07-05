@@ -174,7 +174,7 @@ void bridge::clearexpired(const name& channel, const uint64_t& count) {
 }
 
 // must make sure to always clear transfers on other chain first otherwise would report twice
-void bridge::clearreports(const name& channel, std::vector<uint64_t> ids) {
+void bridge::clearreports(const name& channel, const std::vector<uint64_t>& ids) {
   reports_table reports_t(get_self(), channel.value);
 
   require_auth(get_self());

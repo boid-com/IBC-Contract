@@ -25,8 +25,9 @@ CONTRACT bridge: public contract {
     name admin_account;
     name current_chain_name;
     bool enabled;
-    eosio::microseconds expire_after = days(7);  // duration after which transfers and reports expire can be evicted from RAM
+    eosio::microseconds expire_after = days(7);  // duration after which transfers and reports expire and can be evicted from RAM
     uint32_t weight_threshold;                   // cumulative weight threshold needed for a report to be confirmed
+    uint64_t unclaimed_points = 0;
   };
   using settings_singleton = eosio::singleton<"settings"_n, settings_row>;
 
@@ -44,12 +45,15 @@ CONTRACT bridge: public contract {
   // IBC Tokens
   TABLE tokens_row {
     name channel;
-    extended_symbol token_info;  // stores info about the token that needs to be issued
-    bool do_issue;               // whether tokens should be issued or taken from the contract balance
-    asset min_quantity;          // minimum transfer quantity
-    extended_symbol remote_token;
-    bool enabled;
-
+    extended_symbol token_info;    // stores info about the token that needs to be issued or received
+    bool do_issue;                 // whether tokens should be issued or taken from the contract balance
+    asset min_quantity;            // minimum transfer quantity
+    extended_symbol remote_token;  // contract where token is issued on this chain
+    bool enabled;                  // disabled tokens can't be deposited for IBC transfers
+    float fee_pct;                 // percentage of deposit to be taken as a fee
+    asset fee_flat;                // a flat fee taken from each IBC deposit
+    asset total_claimed_fees;      // fees collected and also claimed by reporters
+    asset unclaimed_fees;          // fees collected but not yet claimed
     uint64_t primary_key() const { return token_info.get_symbol().code().raw(); }
     uint64_t by_remote() const { return remote_token.get_symbol().code().raw(); }
   };
@@ -117,11 +121,16 @@ CONTRACT bridge: public contract {
   TABLE reporters_row {
     name account;
     uint64_t unclaimed_points = 0;
-    uint64_t claimed_points = 0;
+    uint64_t total_claimed_points = 0;
+    time_point_sec last_claim_time = current_time_point();
     uint8_t weight = 1;
+    vector<extended_asset> unclaimed_fees;
     uint64_t primary_key() const { return account.value; }
   };
   using reporters_table = eosio::multi_index<"reporters"_n, reporters_row>;
+
+  ACTION claimpoints(const name& reporter);
+  ACTION claimfees(const name& reporter);
 
   //
   // ACTIONS
@@ -134,7 +143,8 @@ CONTRACT bridge: public contract {
    * @param expire_after_seconds pending transfers will stay in the transfers table for this long before they will fail
    * @param threshold how many reporters are required to approve a transfer for it to be validated
    */
-  ACTION init(const name& admin_account, const name& current_chain_name, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold);
+  ACTION
+  init(const name& admin_account, const name& current_chain_name, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold);
 
   ACTION addchannel(const name& channel_name, const name& remote_contract);
 
@@ -147,7 +157,7 @@ CONTRACT bridge: public contract {
    * @param remote_token external token contract info
    * @param enabled channel must be enabled to process transactions
    */
-  ACTION addtoken(const name& channel, const extended_symbol& token_symbol, const bool& do_issue, const asset& min_quantity, const extended_symbol& remote_token, const bool& enabled);
+  ACTION addtoken(const name& channel, const extended_symbol& token_symbol, const bool& do_issue, const asset& min_quantity, const extended_symbol& remote_token, const float& fee_pct, const asset& fee_flat, const bool& enabled);
 
   /**
    * update token parameters
@@ -189,14 +199,14 @@ CONTRACT bridge: public contract {
    * @param channel_name
    * @param ids
    */
-  [[eosio::action("clear.trans")]] void cleartransfers(const name& channel_name, std::vector<uint64_t> ids);
+  [[eosio::action("clear.trans")]] void cleartransfers(const name& channel_name, const std::vector<uint64_t>& ids);
 
   /**
    *
    * @param channel
    * @param ids
    */
-  [[eosio::action("clear.rep")]] void clearreports(const name& channel, std::vector<uint64_t> ids);
+  [[eosio::action("clear.rep")]] void clearreports(const name& channel, const std::vector<uint64_t>& ids);
 
   /**
    *
@@ -365,4 +375,52 @@ CONTRACT bridge: public contract {
     }
     return count;
   }
+  // float pow(float x, int y) {
+  //   float result = 1;
+  //   for(int i = 0; i < y; ++i) {
+  //     result *= x;
+  //   }
+  //   return result;
+  // }
+
+  // float asset_to_float(asset target) {
+  //   return float(target.amount) / pow(10.0, target.symbol.precision());
+  // }
+
+  // asset float_to_asset(float target, symbol symbol) {
+  //   return asset(uint64_t(target * pow(10.0, symbol.precision())), symbol);
+  // }
+
+  void add_fee_token(reporters_table & reporters_t, reporters_table::const_iterator target_itr, const extended_asset& quantity) {
+    reporters_t.modify(target_itr, get_self(), [&](reporters_row& row) {
+      vector<eosio::extended_asset>::iterator token_itr = find_if(row.unclaimed_fees.begin(), row.unclaimed_fees.end(), [&](extended_asset& token) {
+        if(token.get_extended_symbol() == quantity.get_extended_symbol())
+          return true;
+        else
+          return false;
+      });
+      if(token_itr == row.unclaimed_fees.end()) row.unclaimed_fees.push_back(quantity);
+      else
+        token_itr->quantity += quantity.quantity;
+    });
+  }
+
+  // void boid::defi::sub_reward_token(holdings_table & holdings_t, holdings_table::const_iterator target_itr, const asset& quantity) {
+  //   holdings_t.modify(target_itr, get_self(), [&](holdings_row& row) {
+  //     vector<asset>::iterator token_itr = find_if(row.rewards.begin(), row.rewards.end(), [&](asset& token) {
+  //       if(token.symbol == quantity.symbol) return true;
+  //       else
+  //         return false;
+  //     });
+  //     check(token_itr != row.rewards.end(), "can't subtract rewards token " + quantity.to_string() + " because user doesn't have this token in their holdings");
+  //     check(token_itr->amount >= quantity.amount, "Trying to subtract " + quantity.to_string() + " but user only holds " + token_itr->to_string());
+  //     int64_t new_balance = token_itr->amount - quantity.amount;
+  //     if(new_balance > 0)
+  //       token_itr->set_amount(new_balance);
+  //     else {
+  //       row.rewards.erase(token_itr);
+  //     }
+  //   });
+  //   if(target_itr->holding.size() == size_t(0) && target_itr->rewards.size() == size_t(0)) holdings_t.erase(target_itr);
+  // }
 };
