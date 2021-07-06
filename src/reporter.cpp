@@ -1,7 +1,7 @@
 #include <bridge.hpp>
 void bridge::addreporter(const name& reporter, const uint8_t& weight) {
-  auto settings = get_settings();
-  require_auth(settings.admin_account);
+  auto globals = get_settings();
+  require_auth(globals.admin_account);
 
   reporters_table reporters_t(get_self(), get_self().value);
 
@@ -17,8 +17,8 @@ void bridge::addreporter(const name& reporter, const uint8_t& weight) {
 }
 
 void bridge::rmreporter(const name& reporter) {
-  auto settings = get_settings();
-  require_auth(settings.admin_account);
+  auto globals = get_settings();
+  require_auth(globals.admin_account);
 
   reporters_table _reporters_table(get_self(), get_self().value);
 

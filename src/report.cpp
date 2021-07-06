@@ -67,8 +67,8 @@ ACTION bridge::report(const name& reporter, const name& channel, const transfers
 }
 
 ACTION bridge::exec(const name& reporter, const name& channel, const uint64_t& report_id) {
-  settings_singleton settings_t(get_self(), get_self().value);
-  settings_row settings_r = settings_t.get();
+  globals_singleton settings_t(get_self(), get_self().value);
+  globals settings_r = settings_t.get();
   check(settings_r.enabled, "bridge disabled");
 
   reports_table reports_t(get_self(), channel.value);
@@ -111,7 +111,7 @@ ACTION bridge::exec(const name& reporter, const name& channel, const uint64_t& r
 }
 
 ACTION bridge::execfailed(const name& reporter, const name& channel, const uint64_t& report_id) {
-  settings_singleton settings_t(get_self(), get_self().value);
+  globals_singleton settings_t(get_self(), get_self().value);
   auto settings_r = settings_t.get();
 
   check(settings_r.enabled, "bridge disabled");

@@ -21,15 +21,15 @@ CONTRACT bridge: public contract {
   // TABLES
   //
   // Global Settings
-  TABLE settings_row {
+  TABLE globals {
     name admin_account;
     name current_chain_name;
     bool enabled;
     eosio::microseconds expire_after = days(7);  // duration after which transfers and reports expire and can be evicted from RAM
     uint32_t weight_threshold;                   // cumulative weight threshold needed for a report to be confirmed
-    uint64_t unclaimed_points = 0;
+    uint32_t unclaimed_points = 0;
   };
-  using settings_singleton = eosio::singleton<"settings"_n, settings_row>;
+  using globals_singleton = eosio::singleton<"globals"_n, globals>;
 
   // Multichain Channels
   TABLE channels_row {
@@ -257,6 +257,7 @@ CONTRACT bridge: public contract {
   ACTION clrtokens(name channel);
   ACTION clrreports(name channel);
   ACTION clrchannels();
+  ACTION clrsettings();
 
   template <typename T>
   void cleanTable(name code, uint64_t account, const uint32_t batchSize) {
@@ -270,7 +271,7 @@ CONTRACT bridge: public contract {
 #endif
 
  private:
-  settings_row get_settings();
+  globals get_settings();
 
   bool channel_exists(name channel_name);
 

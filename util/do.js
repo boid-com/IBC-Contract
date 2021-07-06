@@ -2,8 +2,17 @@
 const conf = require('../eosioConfig')
 const env = require('../.env.js')
 const { api, tapos, doAction } = require('./lib/eosjs')()
+const activeChain = process.env.CHAIN || env.defaultChain
 
 const methods = {
+  async init() {
+    await doAction('init', {
+      admin_account: conf.accountName[activeChain],
+      current_chain_name: activeChain.toLowerCase(),
+      expire_after_seconds: 600,
+      weight_threshold: 2
+    })
+  },
   async addtoken() {
     await doAction('addtoken', {
       channel: 'telos',
@@ -23,27 +32,6 @@ const methods = {
   async rmtoken() {
     await doAction('rmtoken', {})
   },
-  async report() {
-    doAction('report', {
-      reporter: 'ibcbridgedev',
-      channel: 'telos',
-      transfer: {
-        id: 1,
-        transaction_id: '79F169E4822E13B904FB395A6940C46B53F618233568663645BCF6C813F77912',
-        from_blockchain: 'telos',
-        to_blockchain: 'wax',
-        from_account: 'eosio.token',
-        to_account: 'eosio.token',
-        quantity: '100.0000 TLOS',
-        memo: 'test',
-        transaction_time: new Date(),
-        expires_at: new Date(Date.now() + 6000000),
-        is_refund: false
-      }
-
-    })
-  },
-  // async addtoken
 
 }
 

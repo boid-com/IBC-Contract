@@ -10,10 +10,11 @@ const methods = {
     const { api, tapos } = require('./lib/eosjs')(env.keys.telosTest, conf.endpoints.telosTest[0])
 
     const authorization = [{ actor: conf.accountName.telosTest, permission: 'active' }]
+    // console.log(authorization);
     if (!type) type = 'debug'
 
     console.log("Pushing ABI");
-    const result = await api.transact({ actions: [setAbiAction(`../build/${conf.contractName}.abi`, authorization)] }, tapos).catch(err => console.log(err.toString()))
+    const result = await api.transact({ actions: [setAbiAction(`../build/${conf.contractName}.abi`, authorization)] }, tapos).catch(err => console.log(err))
     if (result) console.log('https://telos-test.bloks.io/transaction/' + result.transaction_id)
 
     console.log("Pushing WASM");

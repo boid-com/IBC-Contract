@@ -5,11 +5,13 @@ const { api, tapos, doAction } = require('./lib/eosjs')()
 
 const methods = {
 
-  async fullReset() {
-    doAction('clrtokens', { channel: "wax" })
-    doAction('clrreporters', { channel: "wax" })
-    doAction('clrtransfers', { channel: "wax" })
-    doAction('clrreports', { channel: "wax" })
+  async fullReset(channel) {
+    // doAction('clrtokens', { channel })
+    // doAction('clrreporters', { channel })
+    // doAction('clrtransfers', { channel })
+    // doAction('clrreports', { channel })
+    doAction('clrchannels', {})
+    doAction('clrsettings', {})
   }
 
 }

@@ -22,15 +22,17 @@ const jsonToRawAbi = json => {
   })
 
   const abiDefinition = tmpApi.abiTypes.get(`abi_def`)
+
   // need to make sure abi has every field in abiDefinition.fields
   // otherwise serialize throws
   const jsonExtended = abiDefinition.fields.reduce(
     (acc, { name: fieldName }) => Object.assign(acc, { [fieldName]: acc[fieldName] || [] }),
     json,
   )
+
   // fs.writeFileSync('./abiMod.abi', JSON.stringify(jsonExtended, null, 2))
   abiDefinition.serialize(buffer, jsonExtended)
-
+  // console.log('here');
   if (!Serialize.supportedAbiVersion(buffer.getString())) {
     throw new Error(`Unsupported abi version`)
   }
@@ -45,8 +47,7 @@ function setCodeAction(wasmFile, authorization) {
   const contents = loadFileContents(wasmFile)
 
   const wasm = contents.toString(`hex`)
-
-  return {
+  const result = {
     account: `eosio`,
     name: `setcode`,
     authorization,
@@ -57,10 +58,11 @@ function setCodeAction(wasmFile, authorization) {
       code: wasm,
     },
   }
+  // console.log(result)
+  return result
 }
 
 function setAbiAction(abiFile, authorization) {
-
   const contents = loadFileContents(abiFile)
 
   let abi
@@ -71,14 +73,19 @@ function setAbiAction(abiFile, authorization) {
       `Cannot parse contents of ABI file ${path.resolve(account.abi)}:\n\t${error.message}`,
     )
   }
-  const serializedAbi = jsonToRawAbi(abi).toString(`hex`)
+  // console.log('setting abi');
 
-  return {
+  const serializedAbi = jsonToRawAbi(abi).toString(`hex`)
+  // console.log('setting abi');
+
+  const result = {
     account: `eosio`,
     name: `setabi`,
     authorization,
     data: { account: authorization[0].actor, abi: serializedAbi },
   }
+  // console.log(result);
+  return result
 }
 
 module.exports = { setAbiAction, setCodeAction }

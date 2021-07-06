@@ -1,12 +1,12 @@
 #include <bridge.hpp>
 void bridge::on_transfer(const name& from, const name& to, const asset& quantity, const string& memo) {
-  auto settings = get_settings();
+  auto globals = get_settings();
 
   // allow maintenance when bridge disabled
   if(from == get_self() || from == "eosio.ram"_n || from == "eosio.stake"_n || from == "eosio.rex"_n) return;
 
   // check bridge
-  check(settings.enabled, "bridge disabled");
+  check(globals.enabled, "bridge disabled");
 
   // check channel
   const memo_x_transfer& memo_object = parse_memo(memo);
@@ -15,7 +15,7 @@ void bridge::on_transfer(const name& from, const name& to, const asset& quantity
                  [](unsigned char c) { return std::tolower(c); });
 
   name channel_name = name(channel);
-  check(settings.current_chain_name != channel_name, "cannot send to the same chain");
+  check(globals.current_chain_name != channel_name, "cannot send to the same chain");
 
   channels_table channels(get_self(), get_self().value);
   auto channel_itr = channels.find(channel_name.value);

@@ -158,6 +158,11 @@
             ]
         },
         {
+            "name": "clrchannels",
+            "base": "",
+            "fields": []
+        },
+        {
             "name": "clrreporters",
             "base": "",
             "fields": []
@@ -171,6 +176,11 @@
                     "type": "name"
                 }
             ]
+        },
+        {
+            "name": "clrsettings",
+            "base": "",
+            "fields": []
         },
         {
             "name": "clrtokens",
@@ -249,6 +259,36 @@
                 {
                     "name": "contract",
                     "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "globals",
+            "base": "",
+            "fields": [
+                {
+                    "name": "admin_account",
+                    "type": "name"
+                },
+                {
+                    "name": "current_chain_name",
+                    "type": "name"
+                },
+                {
+                    "name": "enabled",
+                    "type": "bool"
+                },
+                {
+                    "name": "expire_after",
+                    "type": "microseconds"
+                },
+                {
+                    "name": "weight_threshold",
+                    "type": "uint32"
+                },
+                {
+                    "name": "unclaimed_points",
+                    "type": "uint32"
                 }
             ]
         },
@@ -381,36 +421,6 @@
                 {
                     "name": "reporter",
                     "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "settings_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "admin_account",
-                    "type": "name"
-                },
-                {
-                    "name": "current_chain_name",
-                    "type": "name"
-                },
-                {
-                    "name": "enabled",
-                    "type": "bool"
-                },
-                {
-                    "name": "expire_after",
-                    "type": "microseconds"
-                },
-                {
-                    "name": "weight_threshold",
-                    "type": "uint32"
-                },
-                {
-                    "name": "unclaimed_points",
-                    "type": "uint64"
                 }
             ]
         },
@@ -593,6 +603,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "clrchannels",
+            "type": "clrchannels",
+            "ricardian_contract": ""
+        },
+        {
             "name": "clrreporters",
             "type": "clrreporters",
             "ricardian_contract": ""
@@ -600,6 +615,11 @@
         {
             "name": "clrreports",
             "type": "clrreports",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "clrsettings",
+            "type": "clrsettings",
             "ricardian_contract": ""
         },
         {
@@ -662,6 +682,13 @@
             "key_types": []
         },
         {
+            "name": "globals",
+            "type": "globals",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
             "name": "reporters",
             "type": "reporters_row",
             "index_type": "i64",
@@ -678,13 +705,6 @@
         {
             "name": "reports.expr",
             "type": "reports_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "settings_row",
-            "type": "settings_row",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

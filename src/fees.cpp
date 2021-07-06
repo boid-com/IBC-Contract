@@ -10,8 +10,8 @@ void bridge::reporter_worked(const name& reporter) {
   });
 
   // increment global unclaimed points
-  settings_singleton settings_table(get_self(), get_self().value);
-  settings_row settings_r = settings_table.get();
+  globals_singleton settings_table(get_self(), get_self().value);
+  globals settings_r = settings_table.get();
   settings_r.unclaimed_points++;
   settings_table.set(settings_r, same_payer);
 }
@@ -27,8 +27,8 @@ ACTION bridge::claimpoints(const name& reporter) {
   check(channels_t.begin() != channels_t.end(), "channel ha");
   channels_table::const_iterator channels_itr = channels_t.begin();
 
-  settings_singleton settings_table(get_self(), get_self().value);
-  settings_row settings_r = settings_table.get();
+  globals_singleton settings_table(get_self(), get_self().value);
+  globals settings_r = settings_table.get();
 
   const float reporters_share = float(reporter_unclaimed_points) / float(settings_r.unclaimed_points);
 

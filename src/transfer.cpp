@@ -2,7 +2,7 @@
 void bridge::register_transfer(const name& channel_name,
                                const name& from, const name& to_account,
                                const asset& quantity, const string& memo, bool is_refund) {
-  settings_singleton settings_table(get_self(), get_self().value);
+  globals_singleton settings_table(get_self(), get_self().value);
   auto settings = settings_table.get();
 
   check(settings.enabled, "bridge disabled");

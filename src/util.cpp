@@ -60,4 +60,13 @@ ACTION bridge::clrreports(name channel) {
   require_auth(get_self());
   cleanTable<reports_table>(get_self(), channel.value, 100);
 };
+ACTION bridge::clrchannels() {
+  require_auth(get_self());
+  cleanTable<channels_table>(get_self(), get_self().value, 100);
+}
+ACTION bridge::clrsettings() {
+  globals_singleton settings_table(get_self(), get_self().value);
+  check(settings_table.exists(), "settings table is empty");
+  settings_table.remove();
+}
 #endif
