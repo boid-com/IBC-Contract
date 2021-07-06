@@ -98,6 +98,10 @@
                 {
                     "name": "reporter",
                     "type": "name"
+                },
+                {
+                    "name": "token",
+                    "type": "symbol_code"
                 }
             ]
         },

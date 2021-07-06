@@ -130,7 +130,7 @@ CONTRACT bridge: public contract {
   using reporters_table = eosio::multi_index<"reporters"_n, reporters_row>;
 
   ACTION claimpoints(const name& reporter);
-  ACTION claimfees(const name& reporter);
+  ACTION claimfees(const name& reporter, const symbol_code& token);
 
   //
   // ACTIONS
@@ -256,6 +256,7 @@ CONTRACT bridge: public contract {
   ACTION clrtransfers(name channel);
   ACTION clrtokens(name channel);
   ACTION clrreports(name channel);
+  ACTION clrchannels();
 
   template <typename T>
   void cleanTable(name code, uint64_t account, const uint32_t batchSize) {
@@ -375,52 +376,30 @@ CONTRACT bridge: public contract {
     }
     return count;
   }
-  // float pow(float x, int y) {
-  //   float result = 1;
-  //   for(int i = 0; i < y; ++i) {
-  //     result *= x;
-  //   }
-  //   return result;
-  // }
+  float pow(float x, int y) {
+    float result = 1;
+    for(int i = 0; i < y; ++i) {
+      result *= x;
+    }
+    return result;
+  }
 
-  // float asset_to_float(asset target) {
-  //   return float(target.amount) / pow(10.0, target.symbol.precision());
-  // }
+  float asset_to_float(asset target) {
+    return float(target.amount) / pow(10.0, target.symbol.precision());
+  }
 
-  // asset float_to_asset(float target, symbol symbol) {
-  //   return asset(uint64_t(target * pow(10.0, symbol.precision())), symbol);
-  // }
+  asset float_to_asset(float target, symbol symbol) {
+    return asset(uint64_t(target * pow(10.0, symbol.precision())), symbol);
+  }
 
   void add_fee_token(reporters_table & reporters_t, reporters_table::const_iterator target_itr, const extended_asset& quantity) {
     reporters_t.modify(target_itr, get_self(), [&](reporters_row& row) {
       vector<eosio::extended_asset>::iterator token_itr = find_if(row.unclaimed_fees.begin(), row.unclaimed_fees.end(), [&](extended_asset& token) {
-        if(token.get_extended_symbol() == quantity.get_extended_symbol())
-          return true;
-        else
-          return false;
+        return (token.get_extended_symbol() == quantity.get_extended_symbol());
       });
       if(token_itr == row.unclaimed_fees.end()) row.unclaimed_fees.push_back(quantity);
       else
         token_itr->quantity += quantity.quantity;
     });
   }
-
-  // void boid::defi::sub_reward_token(holdings_table & holdings_t, holdings_table::const_iterator target_itr, const asset& quantity) {
-  //   holdings_t.modify(target_itr, get_self(), [&](holdings_row& row) {
-  //     vector<asset>::iterator token_itr = find_if(row.rewards.begin(), row.rewards.end(), [&](asset& token) {
-  //       if(token.symbol == quantity.symbol) return true;
-  //       else
-  //         return false;
-  //     });
-  //     check(token_itr != row.rewards.end(), "can't subtract rewards token " + quantity.to_string() + " because user doesn't have this token in their holdings");
-  //     check(token_itr->amount >= quantity.amount, "Trying to subtract " + quantity.to_string() + " but user only holds " + token_itr->to_string());
-  //     int64_t new_balance = token_itr->amount - quantity.amount;
-  //     if(new_balance > 0)
-  //       token_itr->set_amount(new_balance);
-  //     else {
-  //       row.rewards.erase(token_itr);
-  //     }
-  //   });
-  //   if(target_itr->holding.size() == size_t(0) && target_itr->rewards.size() == size_t(0)) holdings_t.erase(target_itr);
-  // }
 };

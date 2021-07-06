@@ -5,7 +5,7 @@ const { api, tapos, doAction } = require('./lib/eosjs')()
 
 const methods = {
   async addtoken() {
-    doAction('addtoken', {
+    await doAction('addtoken', {
       channel: 'telos',
       do_issue: true,
       enabled: true,
@@ -19,6 +19,9 @@ const methods = {
       },
       min_quantity: "1.0000 TLOS"
     })
+  },
+  async rmtoken() {
+    await doAction('rmtoken', {})
   },
   async report() {
     doAction('report', {
