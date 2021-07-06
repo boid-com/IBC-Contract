@@ -31,7 +31,7 @@ void bridge::on_transfer(const name& from, const name& to, const asset& quantity
   check(quantity.symbol == tokens_itr->token_info.get_symbol(), "correct token contract, but wrong symbol");
   check(quantity >= tokens_itr->min_quantity, "sent quantity is less than required min quantity");
   float fee_pct = tokens_itr->fee_pct / 100;
-  asset total_fee = asset(quantity.amount * fee_pct, quantity.symbol) + tokens_itr->fee_flat;
+  asset total_fee = float_to_asset(asset_to_float(quantity) * fee_pct, quantity.symbol) + tokens_itr->fee_flat;
   asset final_quantity = quantity - total_fee;
   check(final_quantity > tokens_itr->min_quantity, "After fee of " + total_fee.to_string() + " the transfer quantity " + quantity.to_string() + " is below the minimum of " + tokens_itr->min_quantity.to_string());
 
