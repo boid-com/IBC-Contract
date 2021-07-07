@@ -155,7 +155,10 @@ CONTRACT bridge: public contract {
    * @param do_issue issue tokens on this chain?
    * @param min_quantity minimum quantity of this token that can be sent over the IBC channel
    * @param remote_token external token contract info
+   * @param fee_pct percentage of the deposit to collect as fees, stacks on flat fee
+   * @param fee_flat flat rate fee on each deposit of this type, stacks on pct fee
    * @param enabled channel must be enabled to process transactions
+
    */
   ACTION addtoken(const name& channel, const extended_symbol& token_symbol, const bool& do_issue, const asset& min_quantity, const extended_symbol& remote_token, const float& fee_pct, const asset& fee_flat, const bool& enabled);
 

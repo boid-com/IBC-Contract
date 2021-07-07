@@ -5,6 +5,22 @@ const { api, tapos, doAction } = require('./lib/eosjs')()
 const activeChain = process.env.CHAIN || env.defaultChain
 
 const methods = {
+  async claimpoints(reporter) {
+    await doAction('claimpoints', {
+      reporter
+    })
+  },
+  async claimfees(reporter, token) {
+    await doAction('claimfees', {
+      reporter, token
+    })
+  },
+  async enable(enable) {
+    enable = JSON.parse(enable.toLowerCase());
+    await doAction('enable', {
+      enable
+    })
+  },
   async init() {
     await doAction('init', {
       admin_account: conf.accountName[activeChain],
@@ -13,7 +29,13 @@ const methods = {
       weight_threshold: 2
     })
   },
-  async addtoken() {
+  async addchannel(name, remote) {
+    await doAction('addchannel', {
+      channel_name: name,
+      remote_contract: remote
+    })
+  },
+  async addtoken1() {
     await doAction('addtoken', {
       channel: 'telos',
       do_issue: true,
@@ -26,7 +48,33 @@ const methods = {
         contract: 'ibcbridgetkn',
         sym: '4,TLOS'
       },
-      min_quantity: "1.0000 TLOS"
+      min_quantity: "0.5000 TLOS",
+      fee_pct: 1,
+      fee_flat: "0.0001 TLOS"
+    })
+  },
+  async addtoken2() {
+    await doAction('addtoken', {
+      channel: 'wax',
+      do_issue: false,
+      enabled: true,
+      remote_token: {
+        contract: 'ibcbridgetkn',
+        sym: '4,TLOS'
+      },
+      token_symbol: {
+        contract: 'eosio.token',
+        sym: '4,TLOS'
+      },
+      min_quantity: "0.5000 TLOS",
+      fee_pct: 1,
+      fee_flat: "0.0001 TLOS"
+    })
+  },
+  async addreporter(reporter, weight) {
+    await doAction('addreporter', {
+      reporter,
+      weight: parseInt(weight)
     })
   },
   async rmtoken() {

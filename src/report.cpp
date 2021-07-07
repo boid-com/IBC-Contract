@@ -43,11 +43,6 @@ ACTION bridge::report(const name& reporter, const name& channel, const transfers
       row.id = reports_t.available_primary_key();
       row.transfer = transfer;
       row.confirmation_weight = reporter_itr->weight;
-      // NA let first reporter pay for RAM
-      // need to add actual elements because capacity is not serialized
-      // does not work: s.confirmed_by.reserve(reserved_capacity);
-      // row.confirmed_by = std::vector<name>(reserved_capacity, eosio::name(""));
-      // push_first_free(row.confirmed_by, reporter);
       row.confirmed_by.push_back(reporter);
       row.confirmed = reporter_itr->weight >= settings.weight_threshold;
       row.executed = false;
