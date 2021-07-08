@@ -128,7 +128,6 @@ ACTION bridge::execfailed(const name& reporter, const name& channel, const uint6
   check(std::find(reports_itr->failed_by.begin(), reports_itr->failed_by.end(), reporter) == reports_itr->failed_by.end(),
         "report already marked as failed by reporter");
 
-  //    auto _token = tokens_t.get( report->transfer.quantity.symbol.code().raw(), "token not found" );
   auto remote_token_index = tokens_t.get_index<name("byremote")>();
   auto _token = remote_token_index.get(reports_itr->transfer.quantity.symbol.code().raw(), "token not found");
 
