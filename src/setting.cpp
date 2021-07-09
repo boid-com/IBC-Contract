@@ -22,7 +22,7 @@ ACTION bridge::init(const name& admin_account, const name& current_chain_name, c
     get_self());
 }
 
-ACTION bridge::update(const name& channel, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold) {
+ACTION bridge::update(const name& channel, const name& current_chain_name, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold) {
   globals_singleton settings_t(get_self(), get_self().value);
   globals settings_r = settings_t.get();
   reports_table reports_t(get_self(), channel.value);
@@ -33,6 +33,7 @@ ACTION bridge::update(const name& channel, const uint32_t& expire_after_seconds,
 
   settings_r.weight_threshold = weight_threshold;
   settings_r.expire_after = seconds(expire_after_seconds);
+  settings_r.current_chain_name = current_chain_name;
   settings_t.set(settings_r, get_self());
 
   // need to update all unconfirmed reports and check if they are now confirmed

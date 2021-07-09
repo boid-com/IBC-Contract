@@ -132,7 +132,7 @@ ACTION bridge::execfailed(const name& reporter, const name& channel, const uint6
   auto _token = remote_token_index.get(reports_itr->transfer.quantity.symbol.code().raw(), "token not found");
 
   bool failed = false;
-  reports_t.modify(reports_itr, eosio::same_payer, [&](reports_row& row) {
+  reports_t.modify(reports_itr, reporter, [&](reports_row& row) {
     row.failed_by.push_back(reporter);
     row.failed_weight += reporter_itr->weight;
     row.failed = failed = row.failed_weight >= settings_r.weight_threshold;
@@ -162,8 +162,11 @@ void bridge::clearexpired(const name& channel, const uint64_t& count) {
 
   auto current_count = 0;
   expiredreports_table expiredreports_t(get_self(), channel.value);
-  for(auto it = expiredreports_t.begin(); it != expiredreports_t.end() && current_count < count; current_count++, it++) {
-    expiredreports_t.erase(it);
+  uint64_t i = 0;
+  expiredreports_table::const_iterator itr = expiredreports_t.begin();
+  while(i < count && itr != expiredreports_t.end()) {
+    itr = expiredreports_t.erase(itr);
+    i++;
   }
 }
 

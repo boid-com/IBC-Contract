@@ -177,7 +177,7 @@ CONTRACT bridge: public contract {
    * @param expire_after_seconds
    * @param threshold
    */
-  ACTION update(const name& channel, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold);
+  ACTION update(const name& channel, const name& current_chain_name, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold);
 
   /**
    *

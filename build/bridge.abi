@@ -529,6 +529,10 @@
                     "type": "name"
                 },
                 {
+                    "name": "current_chain_name",
+                    "type": "name"
+                },
+                {
                     "name": "expire_after_seconds",
                     "type": "uint32"
                 },

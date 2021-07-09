@@ -5,6 +5,20 @@ const { api, tapos, doAction } = require('./lib/eosjs')()
 const activeChain = process.env.CHAIN || env.defaultChain
 
 const methods = {
+  async clearexpired(channel, count) {
+    //  [[eosio::action("clear.exp")]] void clearexpired(const name& channel, const uint64_t& count);
+    await doAction('clear.exp', {
+      channel,
+      count: parseInt(count)
+    })
+  },
+  async exec(reporter, channel, report_id) {
+    await doAction('exec', {
+      reporter,
+      channel,
+      report_id: parseInt(report_id)
+    }, null, reporter)
+  },
   async claimpoints(reporter) {
     await doAction('claimpoints', {
       reporter
@@ -21,10 +35,10 @@ const methods = {
       enable
     })
   },
-  async init() {
+  async init(chainName) {
     await doAction('init', {
       admin_account: conf.accountName[activeChain],
-      current_chain_name: activeChain.toLowerCase(),
+      current_chain_name: chainName,
       expire_after_seconds: 600,
       weight_threshold: 2
     })
@@ -49,8 +63,8 @@ const methods = {
         sym: '4,TLOS'
       },
       min_quantity: "0.5000 TLOS",
-      fee_pct: 1,
-      fee_flat: "0.0001 TLOS"
+      fee_pct: 0.5,
+      fee_flat: "0.1000 TLOS"
     })
   },
   async addtoken2() {
@@ -67,8 +81,8 @@ const methods = {
         sym: '4,TLOS'
       },
       min_quantity: "0.5000 TLOS",
-      fee_pct: 1,
-      fee_flat: "0.0001 TLOS"
+      fee_pct: 0.5,
+      fee_flat: "0.1000 TLOS"
     })
   },
   async addreporter(reporter, weight) {
@@ -80,6 +94,13 @@ const methods = {
   async rmtoken() {
     await doAction('rmtoken', {})
   },
+  async update(channel, current_chain_name, expire_after_seconds, weight_threshold,) {
+    //ACTION bridge::update(const name& channel, const uint32_t& expire_after_seconds, const uint32_t& weight_threshold) {
+
+    await doAction('update', {
+      channel, current_chain_name, expire_after_seconds: parseInt(expire_after_seconds), weight_threshold: parseInt(weight_threshold)
+    })
+  }
 
 }
 
