@@ -98,7 +98,11 @@ ACTION bridge::exec(const name& reporter, const name& channel, const uint64_t& r
   }
 
   token::transfer_action transfer_act(token_contract, {get_self(), "active"_n});
-  transfer_act.send(get_self(), reports_itr->transfer.to_account, quantity, reports_itr->transfer.memo);
+  string xfer_memo = reports_itr->transfer.memo;
+  if(xfer_memo.substr(0, 7) == "IBCDATA") {
+    xfer_memo += "| ibc_from:" + reports_itr->transfer.from_account.to_string() + "@" + reports_itr->transfer.from_blockchain.to_string();
+  }
+  transfer_act.send(get_self(), reports_itr->transfer.to_account, quantity, xfer_memo);
 
   reports_t.modify(reports_itr, eosio::same_payer, [&](auto& s) {
     s.executed = true;

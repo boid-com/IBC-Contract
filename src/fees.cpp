@@ -31,7 +31,7 @@ ACTION bridge::claimpoints(const name& reporter) {
   globals settings_r = settings_table.get();
 
   const float reporters_share = float(reporter_unclaimed_points) / float(settings_r.unclaimed_points);
-
+  bool claimed_funds = false;
   while(channels_itr != channels_t.end()) {
     tokens_table tokens_t(get_self(), channels_itr->channel_name.value);
     tokens_table::const_iterator tokens_itr = tokens_t.begin();
@@ -40,6 +40,7 @@ ACTION bridge::claimpoints(const name& reporter) {
       const asset reporter_claim_quantity = float_to_asset(asset_to_float(tokens_itr->unclaimed_fees) * reporters_share, sym);
       const extended_asset reporter_claim_extended = extended_asset(reporter_claim_quantity, tokens_itr->token_info.get_contract());
       if(tokens_itr->unclaimed_fees.amount > 0) {
+        if(!claimed_funds) claimed_funds = true;
         // add the token to the reporters row for withdraw later
         add_fee_token(reporters_t, reporters_itr, reporter_claim_extended);
         // subtract the tokens from the unclaimed fees
@@ -53,6 +54,9 @@ ACTION bridge::claimpoints(const name& reporter) {
     channels_itr++;
   }
   // finished looping through the channels and tokens and collecting the reporters share of the fees
+
+  //check if any funds were actually collected
+  check(claimed_funds, "No fees to claim, try claiming your points after more transfers.");
 
   // count points as claimed for the reporter
   reporters_t.modify(reporters_itr, get_self(), [&](reporters_row& row) {

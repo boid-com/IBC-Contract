@@ -12,6 +12,7 @@ const methods = {
     doAction('clrreports', { channel })
     doAction('clrchannels', {})
     doAction('clrsettings', {})
+    await doAction('clear.exp', { channel, count: 100 })
   }
 
 }

@@ -6,7 +6,6 @@ const activeChain = process.env.CHAIN || env.defaultChain
 
 const methods = {
   async clearexpired(channel, count) {
-    //  [[eosio::action("clear.exp")]] void clearexpired(const name& channel, const uint64_t& count);
     await doAction('clear.exp', {
       channel,
       count: parseInt(count)
